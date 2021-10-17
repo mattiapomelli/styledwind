@@ -1,25 +1,30 @@
-import React, { ElementType, ReactElement } from 'react'
+import React, { ElementType } from 'react'
 
-function sw<P>(
+type StyledWindComponent<P, E> = React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<P> & React.RefAttributes<E>
+>
+
+function sw<P, E>(
   type: React.ComponentType<P>,
   className: string
-): (props?: P) => ReactElement<P>
+): StyledWindComponent<P, E>
 
-function sw<K extends keyof JSX.IntrinsicElements>(
+function sw<K extends keyof JSX.IntrinsicElements, E>(
   type: K,
   className: string
-): (props?: JSX.IntrinsicElements[K]) => ReactElement<JSX.IntrinsicElements[K]>
+): StyledWindComponent<JSX.IntrinsicElements[K], E>
 
-function sw<P extends Record<string, unknown>>(
+function sw<P, E>(
   type: ElementType | keyof JSX.IntrinsicElements,
   className: string
-): (props?: P & { className?: string }) => ReactElement<P> {
-  return function StyledWindComponent(props) {
+): StyledWindComponent<P, E> {
+  return React.forwardRef<E, P>((props, ref) => {
     return React.createElement(type, {
       ...props,
       className,
+      ref,
     })
-  }
+  })
 }
 
 export default sw
