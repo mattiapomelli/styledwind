@@ -1,55 +1,77 @@
 import React, { ElementType } from 'react'
 import domElements from './utils/domElements'
 
-type StyledWindComponent<P> = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<P> & React.RefAttributes<HTMLElement>
->
-
-type Config = {
-  className: string
+type StyledWindComponentConfigProps<C> = {
+  [K in keyof Omit<C, 'defaultClass'>]: keyof C[K]
 }
 
-function sw<P>(
+type StyledWindComponent<P, C> = React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<P & StyledWindComponentConfigProps<C>> &
+    React.RefAttributes<HTMLElement>
+>
+
+interface Config {
+  defaultClass?: string
+}
+
+type Props = {
+  variant: 'primary' | 'secondary'
+}
+
+const getClassNameFromConfig = <C extends Config>(config: C, props: Props) => {
+  return config.defaultClass
+}
+
+function sw<P, C extends Config>(
   type: React.ComponentType<P>,
-  config: Config
-): StyledWindComponent<P>
+  config: C
+): StyledWindComponent<P, C>
 
-function sw<K extends keyof JSX.IntrinsicElements>(
+function sw<K extends keyof JSX.IntrinsicElements, C extends Config>(
   type: K,
-  config: Config
-): StyledWindComponent<JSX.IntrinsicElements[K]>
+  config: C
+): StyledWindComponent<JSX.IntrinsicElements[K], C>
 
-function sw<P>(
+function sw<P, C extends Config>(
   type: ElementType | keyof JSX.IntrinsicElements,
-  config: Config
-): StyledWindComponent<P> {
-  return React.forwardRef<HTMLElement, P>((props, ref) => {
-    return React.createElement(type, {
-      ...props,
+  config: C
+): StyledWindComponent<P, C> {
+  return React.forwardRef<HTMLElement, P & StyledWindComponentConfigProps<C>>(
+    (props, ref) => {
       // @ts-ignore:next-line
-      className: `${props?.className ? props?.className : ''} ${
-        config.className
-      }`,
-      ref,
-    })
-  })
+      const classNameFromProps = props?.className ? props?.className : ''
+      // @ts-ignore:next-line
+      const classNameFromConfig = getClassNameFromConfig(config, props)
+
+      return React.createElement(type, {
+        ...props,
+        className: classNameFromProps + ' ' + classNameFromConfig,
+        ref,
+      })
+    }
+  )
 }
 
 type BaseSw = typeof sw
 
-type SwFunctions = {
+type SwFunctions<C extends Config> = {
   [K in keyof JSX.IntrinsicElements]: (
-    config: Config
-  ) => StyledWindComponent<JSX.IntrinsicElements[K]>
+    config: C
+  ) => StyledWindComponent<JSX.IntrinsicElements[K], C>
 }
 
-type EnhancedSw = BaseSw & SwFunctions
+type EnhancedSw<C extends Config> = BaseSw & SwFunctions<C>
 
-const enhancedSw = sw as EnhancedSw
+const extend = <C extends Config>(sw: BaseSw) => {
+  return sw as EnhancedSw<C>
+}
+
+const enhancedSw = extend(sw)
 
 domElements.forEach(<K extends keyof JSX.IntrinsicElements>(domElement: K) => {
   // @ts-ignore:next-line
-  enhancedSw[domElement] = (config: Config) => sw(domElement, config)
+  enhancedSw[domElement] = <C extends Config>(config: C) =>
+    sw(domElement, config)
 })
 
 export default enhancedSw
