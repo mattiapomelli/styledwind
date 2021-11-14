@@ -30,10 +30,10 @@ const getClassNameFromConfig = <C extends Config, P>(config: C, props: P) => {
   return classes.join(' ')
 }
 
-function sw<P, C extends Config>(
-  type: React.ComponentType<P>,
+function sw<P, V, C extends Config>(
+  type: StyledWindComponent<P, V>,
   config: C
-): StyledWindComponent<P, C>
+): StyledWindComponent<P, V & C>
 
 function sw<K extends keyof JSX.IntrinsicElements, C extends Config>(
   type: K,
