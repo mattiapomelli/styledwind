@@ -73,7 +73,7 @@ function sw<P, C extends Config>(
 
       return React.createElement(type, {
         ...props,
-        className: classNameFromProps + ' ' + classNameFromConfig,
+        className: classNameFromConfig + ' ' + classNameFromProps,
         ref,
       })
     }
