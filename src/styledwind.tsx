@@ -3,6 +3,8 @@ import domElements from './utils/domElements'
 
 type StyledWindComponentConfigProps<C> = {
   [K in keyof Omit<C, 'defaultClass'>]: keyof C[K]
+} & {
+  className?: string
 }
 
 type StyledWindComponent<P, C> = React.ForwardRefExoticComponent<
@@ -14,12 +16,15 @@ interface Config {
   defaultClass?: string
 }
 
-type Props = {
-  variant: 'primary' | 'secondary'
-}
+const getClassNameFromConfig = <C extends Config, P>(config: C, props: P) => {
+  const classes = [config.defaultClass]
 
-const getClassNameFromConfig = <C extends Config>(config: C, props: Props) => {
-  return config.defaultClass
+  for (const key of Object.keys(config)) {
+    // @ts-ignore:next-line
+    classes.push(config[key][props[key]])
+  }
+
+  return classes.join(' ')
 }
 
 function sw<P, C extends Config>(
@@ -38,9 +43,7 @@ function sw<P, C extends Config>(
 ): StyledWindComponent<P, C> {
   return React.forwardRef<HTMLElement, P & StyledWindComponentConfigProps<C>>(
     (props, ref) => {
-      // @ts-ignore:next-line
       const classNameFromProps = props?.className ? props?.className : ''
-      // @ts-ignore:next-line
       const classNameFromConfig = getClassNameFromConfig(config, props)
 
       return React.createElement(type, {
