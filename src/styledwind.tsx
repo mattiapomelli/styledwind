@@ -2,7 +2,7 @@ import React, { ElementType } from 'react'
 import domElements from './utils/domElements'
 
 type StyledWindComponentConfigProps<C> = {
-  [K in keyof Omit<C, 'defaultClass'>]?: keyof C[K]
+  [K in keyof Omit<C, 'default'>]?: keyof C[K]
 } & {
   className?: string
 }
@@ -13,11 +13,11 @@ type StyledWindComponent<P, C> = React.ForwardRefExoticComponent<
 >
 
 interface Config {
-  defaultClass?: string
+  default?: string
 }
 
 const getClassNameFromConfig = <C extends Config, P>(config: C, props: P) => {
-  const classes = [config.defaultClass]
+  const classes = [config.default]
 
   for (const key of Object.keys(config)) {
     // @ts-ignore:next-line
