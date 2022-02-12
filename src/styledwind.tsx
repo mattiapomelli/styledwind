@@ -52,18 +52,18 @@ const getClassNameFromConfig = <C extends Config, P>(config: C, props: P) => {
 
 // composition of styledwind components, form: sw(Component, config)
 function sw<P, V, C extends Config>(
-  type: StyledWindComponent<P, V>,
+  element: StyledWindComponent<P, V>,
   config: C
 ): StyledWindComponent<P, V & C>
 
 // form: sw('button', config)
 function sw<K extends keyof JSX.IntrinsicElements, C extends Config>(
-  type: K,
+  element: K,
   config: C
 ): StyledWindComponent<JSX.IntrinsicElements[K], C>
 
 function sw<P, C extends Config>(
-  type: ElementType | keyof JSX.IntrinsicElements,
+  element: ElementType | keyof JSX.IntrinsicElements,
   config: C
 ): StyledWindComponent<P, C> {
   return React.forwardRef<HTMLElement, P & StyledWindComponentConfigProps<C>>(
@@ -75,7 +75,7 @@ function sw<P, C extends Config>(
       // filter the props. Otherwise it's a composed component and don't filter the props, cause they'll
       // be filtered at the last layer
       const filteredProps =
-        typeof type === 'string'
+        typeof element === 'string'
           ? Object.fromEntries(
               Object.entries(props).filter(
                 ([key]) => !Object.keys(config).includes(key)
@@ -83,7 +83,14 @@ function sw<P, C extends Config>(
             )
           : props
 
-      return React.createElement(type, {
+      console.log('props: ', props)
+      console.log('filtered props: ', filteredProps)
+      console.log('from props: ', classNameFromProps)
+      console.log('from config: ', classNameFromConfig)
+
+      console.log('')
+
+      return React.createElement(element, {
         ...filteredProps,
         className: classNameFromConfig + ' ' + classNameFromProps,
         ref,
