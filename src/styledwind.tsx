@@ -71,24 +71,21 @@ function sw<P, C extends Config>(
       const classNameFromProps = props?.className ? props?.className : ''
       const classNameFromConfig = getClassNameFromConfig(config, props)
 
-      // If the pass element is a string, like 'button', then this is the last layer of composition, so
-      // filter the props. Otherwise it's a composed component and don't filter the props, cause they'll
-      // be filtered at the last layer
-      const filteredProps =
-        typeof element === 'string'
-          ? Object.fromEntries(
-              Object.entries(props).filter(
-                ([key]) => !Object.keys(config).includes(key)
-              )
+      // States if the element is the final element or is a composed component
+      // The element is the final element when the passed argument is a string, like 'button'
+      const isFinalElement = typeof element === 'string'
+
+      // If it's the final element then filter the props passed to the DOM element.
+      // Otherwise it's a composed component and don't filter the props, cause they'll be filtered at the
+      // last level of composition
+      const filteredProps = isFinalElement
+        ? Object.fromEntries(
+            Object.entries(props).filter(
+              ([key]) =>
+                !Object.keys(config).includes(key) && key !== 'swConfig'
             )
-          : props
-
-      console.log('props: ', props)
-      console.log('filtered props: ', filteredProps)
-      console.log('from props: ', classNameFromProps)
-      console.log('from config: ', classNameFromConfig)
-
-      console.log('')
+          )
+        : { ...props, swConfig: config }
 
       return React.createElement(element, {
         ...filteredProps,
