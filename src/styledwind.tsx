@@ -71,8 +71,20 @@ function sw<P, C extends Config>(
       const classNameFromProps = props?.className ? props?.className : ''
       const classNameFromConfig = getClassNameFromConfig(config, props)
 
+      // If the pass element is a string, like 'button', then this is the last layer of composition, so
+      // filter the props. Otherwise it's a composed component and don't filter the props, cause they'll
+      // be filtered at the last layer
+      const filteredProps =
+        typeof type === 'string'
+          ? Object.fromEntries(
+              Object.entries(props).filter(
+                ([key]) => !Object.keys(config).includes(key)
+              )
+            )
+          : props
+
       return React.createElement(type, {
-        ...props,
+        ...filteredProps,
         className: classNameFromConfig + ' ' + classNameFromProps,
         ref,
       })
