@@ -118,37 +118,36 @@ function sw<P, C extends Config>(
 ): StyledWindComponent<P, C> {
   return React.forwardRef<HTMLElement, P & StyledWindComponentConfigProps<C>>(
     (props, ref) => {
-      // const classNameFromProps = props?.className ? props?.className : ''
-      // const classNameFromConfig = getClassNameFromConfig(config, props)
-
       // States if the element is the final element or is a composed component
       // The element is the final element when the passed argument is a string, like 'button'
       const isFinalElement = typeof element === 'string'
 
-      // If it's the final element then filter the props passed to the DOM element.
-      // Otherwise it's a composed component and don't filter the props, cause they'll be filtered at the
-      // last level of composition
-      const filteredProps = isFinalElement
-        ? Object.fromEntries(
-            Object.entries(props).filter(
-              ([key]) =>
-                !Object.keys(config).includes(key) && key !== 'swConfig'
-            )
-          )
-        : { ...props, swConfig: config }
-
       // ----- Classname Creation -----
-      let className = ''
       const classNameFromProps = props?.className || ''
+      let className = ''
+      let filteredProps = {}
 
+      // Check if it's the final element in the composition chain
       if (isFinalElement) {
-        // if it's the final element get the className from the config, and attach the className passed as a prop
+        // Get the className from the config, and attach the className passed as a prop
         const mergedConfig = mergeConfigs(config, props.swConfig)
         const classNameFromConfig = getClassNameFromConfig(mergedConfig, props)
         className = classNameFromConfig + ' ' + classNameFromProps
+
+        // Filter the props passed to the DOM element, keeping only props that are not for the config
+        filteredProps = Object.fromEntries(
+          Object.entries(props).filter(
+            ([key]) =>
+              !Object.keys(mergedConfig).includes(key) && key !== 'swConfig'
+          )
+        )
       } else {
-        // if it's not the final element pass down only the className from the props
+        // Pass down through the composition chain only the className from the props
         className = classNameFromProps
+
+        // Pass the config down through the composition chain as a prop, to be later merged
+        // with the base config
+        filteredProps = { ...props, swConfig: config }
       }
 
       return React.createElement(element, {
