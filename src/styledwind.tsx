@@ -98,6 +98,9 @@ const mergeConfigs = (baseConfig: Config, extendConfig: Config = {}) => {
   return mergedConfig
 }
 
+const joinClassNames = (...classNames: string[]) =>
+  classNames.filter(Boolean).join(' ')
+
 // composition of styledwind components, form: sw(Component, config)
 function sw<P, V, C extends Config>(
   element: StyledWindComponent<P, V>,
@@ -135,7 +138,7 @@ function sw<P, C extends Config>(
       if (isFinalElement) {
         // Get the className from the config, and attach the className passed as a prop
         const classNameFromConfig = getClassNameFromConfig(mergedConfig, props)
-        className = classNameFromConfig + ' ' + classNameFromProps
+        className = joinClassNames(classNameFromConfig, classNameFromProps)
 
         // Filter the props passed to the DOM element, keeping only props that are not for the config
         filteredProps = Object.fromEntries(
