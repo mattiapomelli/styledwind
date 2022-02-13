@@ -24,15 +24,13 @@ type StyledWindComponent<P, C> = React.ForwardRefExoticComponent<
 /**
  * default properties that can be present in the config passed to a styledwind component
  */
-// interface Config {
-//   default?: string
-//   [key: string]?: string
-// }
-
 type DefaultConfigProperties = {
   default?: string
 }
 
+/**
+ * Custom properties that can be present in the config passed to a styledwind component
+ */
 type CustomConfigProperties = {
   [key: string]:
     | string
