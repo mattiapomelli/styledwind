@@ -10,7 +10,7 @@ type StyledWindComponentConfigProps<C> = {
   [K in keyof Omit<C, 'default'>]?: keyof C[K]
 } & {
   className?: string
-  swConfig?: Config
+  __swConfig__?: Config
 }
 
 /**
@@ -130,8 +130,8 @@ function sw<P, C extends Config>(
 
       // Merge the config with the config coming from the layer above of composition
       // through props (if is present)
-      const mergedConfig = props.swConfig
-        ? mergeConfigs(config, props.swConfig)
+      const mergedConfig = props.__swConfig__
+        ? mergeConfigs(config, props.__swConfig__)
         : config
 
       // Check if it's the final element in the composition chain
@@ -144,7 +144,7 @@ function sw<P, C extends Config>(
         filteredProps = Object.fromEntries(
           Object.entries(props).filter(
             ([key]) =>
-              !Object.keys(mergedConfig).includes(key) && key !== 'swConfig'
+              !Object.keys(mergedConfig).includes(key) && key !== '__swConfig__'
           )
         )
       } else {
@@ -153,7 +153,7 @@ function sw<P, C extends Config>(
 
         // Pass the config down through the composition chain as a prop, to be later merged
         // with the base config
-        filteredProps = { ...props, swConfig: mergedConfig }
+        filteredProps = { ...props, __swConfig__: mergedConfig }
       }
 
       return React.createElement(element, {
