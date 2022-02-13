@@ -10,6 +10,7 @@ type StyledWindComponentConfigProps<C> = {
   [K in keyof Omit<C, 'default'>]?: keyof C[K]
 } & {
   className?: string
+  swConfig?: Config
 }
 
 /**
@@ -23,9 +24,24 @@ type StyledWindComponent<P, C> = React.ForwardRefExoticComponent<
 /**
  * default properties that can be present in the config passed to a styledwind component
  */
-interface Config {
+// interface Config {
+//   default?: string
+//   [key: string]?: string
+// }
+
+type DefaultConfigProperties = {
   default?: string
 }
+
+type CustomConfigProperties = {
+  [key: string]:
+    | string
+    | {
+        [key: string]: string
+      }
+}
+
+type Config = DefaultConfigProperties & CustomConfigProperties
 
 /**
  * Builds the class of a styledwind component from its config and the passed props
@@ -50,6 +66,40 @@ const getClassNameFromConfig = <C extends Config, P>(config: C, props: P) => {
   return classes.join(' ')
 }
 
+const mergeConfigs = (baseConfig: Config, extendConfig: Config = {}) => {
+  const mergedConfig: Config = { ...baseConfig }
+
+  for (const [key, value] of Object.entries(extendConfig)) {
+    if (typeof value === 'string') {
+      if (mergedConfig.hasOwnProperty(key)) {
+        mergedConfig[key] += ' ' + value
+      } else {
+        mergedConfig[key] = value
+      }
+      continue
+    }
+
+    if (
+      typeof mergedConfig[key] === 'object' &&
+      mergedConfig.hasOwnProperty(key)
+    ) {
+      for (const [propertyKey, propertyValue] of Object.entries(value)) {
+        if (mergedConfig[key].hasOwnProperty(propertyKey)) {
+          // @ts-ignore:next-line
+          mergedConfig[key][propertyKey] += ' ' + propertyValue
+        } else {
+          // @ts-ignore:next-line
+          mergedConfig[key][propertyKey] = propertyValue
+        }
+      }
+    } else {
+      mergedConfig[key] = value
+    }
+  }
+
+  return mergedConfig
+}
+
 // composition of styledwind components, form: sw(Component, config)
 function sw<P, V, C extends Config>(
   element: StyledWindComponent<P, V>,
@@ -68,8 +118,8 @@ function sw<P, C extends Config>(
 ): StyledWindComponent<P, C> {
   return React.forwardRef<HTMLElement, P & StyledWindComponentConfigProps<C>>(
     (props, ref) => {
-      const classNameFromProps = props?.className ? props?.className : ''
-      const classNameFromConfig = getClassNameFromConfig(config, props)
+      // const classNameFromProps = props?.className ? props?.className : ''
+      // const classNameFromConfig = getClassNameFromConfig(config, props)
 
       // States if the element is the final element or is a composed component
       // The element is the final element when the passed argument is a string, like 'button'
@@ -87,9 +137,23 @@ function sw<P, C extends Config>(
           )
         : { ...props, swConfig: config }
 
+      // ----- Classname Creation -----
+      let className = ''
+      const classNameFromProps = props?.className || ''
+
+      if (isFinalElement) {
+        // if it's the final element get the className from the config, and attach the className passed as a prop
+        const mergedConfig = mergeConfigs(config, props.swConfig)
+        const classNameFromConfig = getClassNameFromConfig(mergedConfig, props)
+        className = classNameFromConfig + ' ' + classNameFromProps
+      } else {
+        // if it's not the final element pass down only the className from the props
+        className = classNameFromProps
+      }
+
       return React.createElement(element, {
         ...filteredProps,
-        className: classNameFromConfig + ' ' + classNameFromProps,
+        className,
         ref,
       })
     }
