@@ -125,10 +125,15 @@ function sw<P, C extends Config>(
       let className = ''
       let filteredProps = {}
 
+      // Merge the config with the config coming from the layer above of composition
+      // through props (if is present)
+      const mergedConfig = props.swConfig
+        ? mergeConfigs(config, props.swConfig)
+        : config
+
       // Check if it's the final element in the composition chain
       if (isFinalElement) {
         // Get the className from the config, and attach the className passed as a prop
-        const mergedConfig = mergeConfigs(config, props.swConfig)
         const classNameFromConfig = getClassNameFromConfig(mergedConfig, props)
         className = classNameFromConfig + ' ' + classNameFromProps
 
@@ -145,7 +150,7 @@ function sw<P, C extends Config>(
 
         // Pass the config down through the composition chain as a prop, to be later merged
         // with the base config
-        filteredProps = { ...props, swConfig: config }
+        filteredProps = { ...props, swConfig: mergedConfig }
       }
 
       return React.createElement(element, {
