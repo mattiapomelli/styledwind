@@ -64,8 +64,34 @@ const getClassNameFromConfig = <C extends Config, P>(config: C, props: P) => {
   return classes.join(' ')
 }
 
+function deepCloneConfig(config: Config): Config
+
+function deepCloneConfig(config: { [key: string]: string }): {
+  [key: string]: string
+}
+
+function deepCloneConfig(
+  obj:
+    | Config
+    | {
+        [key: string]: string
+      }
+) {
+  const cloned: Config = {}
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'object') {
+      cloned[key] = deepCloneConfig(value)
+    } else {
+      cloned[key] = value
+    }
+  }
+
+  return cloned
+}
+
 const mergeConfigs = (baseConfig: Config, extendConfig: Config = {}) => {
-  const mergedConfig: Config = { ...baseConfig }
+  const mergedConfig: Config = deepCloneConfig(baseConfig)
 
   for (const [key, value] of Object.entries(extendConfig)) {
     if (typeof value === 'string') {
