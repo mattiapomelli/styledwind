@@ -7,7 +7,9 @@ import domElements from './utils/domElements'
  * but to the default class of the component
  */
 type StyledWindComponentConfigProps<C> = {
-  [K in keyof Omit<C, 'default'>]?: keyof C[K]
+  [K in keyof Omit<C, 'default'>]?: C[K] extends Dictionary
+    ? keyof C[K]
+    : boolean
 } & {
   className?: string
   __swConfig__?: Config
@@ -47,17 +49,18 @@ type Config = DefaultConfigProperties & CustomConfigProperties
  * @param props props passed to the component
  * @returns the class computed from config and props
  */
-const getClassNameFromConfig = <C extends Config, P>(config: C, props: P) => {
+const getClassNameFromConfig = <C extends Config>(
+  config: C,
+  props: { [key: string]: any }
+) => {
   // add the default class
   const classes = [config.default]
 
   // for every property of the config, check if the corresponding prop is provided,
   // if so, get from the config the value corresponding to the prop value
-  for (const key of Object.keys(config)) {
-    // @ts-ignore:next-line
+  for (const [key, value] of Object.entries(config)) {
     if (props[key]) {
-      // @ts-ignore:next-line
-      classes.push(config[key][props[key]])
+      classes.push(typeof value === 'string' ? value : value[props[key]])
     }
   }
 
