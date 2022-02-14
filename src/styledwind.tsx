@@ -28,15 +28,15 @@ type DefaultConfigProperties = {
   default?: string
 }
 
+type Dictionary = {
+  [key: string]: string
+}
+
 /**
  * Custom properties that can be present in the config passed to a styledwind component
  */
 type CustomConfigProperties = {
-  [key: string]:
-    | string
-    | {
-        [key: string]: string
-      }
+  [key: string]: string | Dictionary
 }
 
 type Config = DefaultConfigProperties & CustomConfigProperties
@@ -64,20 +64,8 @@ const getClassNameFromConfig = <C extends Config, P>(config: C, props: P) => {
   return classes.join(' ')
 }
 
-function deepCloneConfig(config: Config): Config
-
-function deepCloneConfig(config: { [key: string]: string }): {
-  [key: string]: string
-}
-
-function deepCloneConfig(
-  obj:
-    | Config
-    | {
-        [key: string]: string
-      }
-) {
-  const cloned: Config = {}
+const deepCloneConfig = <T extends Config | Dictionary>(obj: T) => {
+  const cloned: T = {} as T
 
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === 'object') {
@@ -91,7 +79,7 @@ function deepCloneConfig(
 }
 
 const mergeConfigs = (baseConfig: Config, extendConfig: Config = {}) => {
-  const mergedConfig: Config = deepCloneConfig(baseConfig)
+  const mergedConfig = deepCloneConfig(baseConfig)
 
   for (const [key, value] of Object.entries(extendConfig)) {
     if (typeof value === 'string') {
