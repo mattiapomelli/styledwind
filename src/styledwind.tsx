@@ -7,14 +7,11 @@ import domElements from './utils/domElements'
  * but to the default class of the component
  */
 type StyledWindComponentConfigProps<C> = {
-  [K in keyof Omit<C, 'default'>]?: C[K] extends Dictionary
-    ? keyof C[K]
-    : boolean
+  [K in keyof Omit<C, 'base'>]?: C[K] extends Dictionary ? keyof C[K] : boolean
 } & {
   className?: string
   __swConfig__?: Config
 }
-
 /**
  * type of a styledwind component, based on the props P and the passed config C
  */
@@ -27,7 +24,7 @@ type StyledWindComponent<P, C> = React.ForwardRefExoticComponent<
  * default properties that can be present in the config passed to a styledwind component
  */
 type DefaultConfigProperties = {
-  default?: string
+  base?: string
 }
 
 type Dictionary = {
@@ -53,8 +50,8 @@ const getClassNameFromConfig = <C extends Config>(
   config: C,
   props: { [key: string]: any }
 ) => {
-  // add the default class
-  const classes = [config.default]
+  // add the base class
+  const classes = [config.base]
 
   // for every property of the config, check if the corresponding prop is provided,
   // if so, get from the config the value corresponding to the prop value
