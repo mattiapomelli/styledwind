@@ -1,5 +1,11 @@
 import React, { ElementType } from 'react'
+
 import domElements from './utils/domElements'
+import { VariantConfigProperties } from './utils/variants'
+
+type Dictionary = {
+  [key: string]: string
+}
 
 /**
  * type of the props that a styledwind component can receive, based on the passed config
@@ -27,10 +33,6 @@ type DefaultConfigProperties = {
   base?: string
 }
 
-type Dictionary = {
-  [key: string]: string
-}
-
 /**
  * Custom properties that can be present in the config passed to a styledwind component
  */
@@ -38,7 +40,9 @@ type CustomConfigProperties = {
   [key: string]: string | Dictionary
 }
 
-type Config = DefaultConfigProperties & CustomConfigProperties
+type Config = DefaultConfigProperties &
+  VariantConfigProperties &
+  CustomConfigProperties
 
 /**
  * Builds the class of a styledwind component from its config and the passed props
@@ -56,7 +60,16 @@ const getClassNameFromConfig = <C extends Config>(
   // for every property of the config, check if the corresponding prop is provided,
   // if so, get from the config the value corresponding to the prop value
   for (const [key, value] of Object.entries(config)) {
-    if (props[key]) {
+    // Get classes for tailwind variants
+    if (key.startsWith('_') && typeof value === 'string') {
+      classes.push(
+        value
+          .split(' ')
+          .map((classItem) => `${key.slice(1)}:${classItem}`)
+          .join(' ')
+      )
+    } else if (props[key]) {
+      // Get classes from props
       classes.push(typeof value === 'string' ? value : value[props[key]])
     }
   }
