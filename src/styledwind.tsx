@@ -3,7 +3,7 @@ import React, { ElementType } from 'react'
 import domElements from './utils/domElements'
 import { VariantConfigProperties } from './utils/variants'
 
-type Dictionary = {
+interface Dictionary {
   [key: string]: string
 }
 
@@ -29,14 +29,14 @@ type StyledWindComponent<P, C> = React.ForwardRefExoticComponent<
 /**
  * default properties that can be present in the config passed to a styledwind component
  */
-type DefaultConfigProperties = {
+interface DefaultConfigProperties {
   base?: string
 }
 
 /**
  * Custom properties that can be present in the config passed to a styledwind component
  */
-type CustomConfigProperties = {
+interface CustomConfigProperties {
   [key: string]: string | Dictionary
 }
 
