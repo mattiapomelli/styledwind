@@ -81,22 +81,15 @@ type BaseSw = typeof sw
  * Type of the functions with dom elements as a name that create the corresponding styledwind component
  * E.g. sw.button(config)
  */
-type SwFunctions<C extends Config> = {
-  [K in keyof JSX.IntrinsicElements]: (
+type SwFunctions = {
+  [K in keyof JSX.IntrinsicElements]: <C extends Config>(
     config: C
   ) => StyledWindComponent<JSX.IntrinsicElements[K], C>
 }
 
-type EnhancedSw<C extends Config> = BaseSw & SwFunctions<C>
+type EnhancedSw = BaseSw & SwFunctions
 
-/**
- * Utility function to convert sw from type BaseSw to type EnhancedSw
- */
-const enhance = <C extends Config>(sw: BaseSw) => {
-  return sw as EnhancedSw<C>
-}
-
-const enhancedSw = enhance(sw)
+const enhancedSw = sw as EnhancedSw
 
 /**
  * For each dom element, create a function inside enhancedSw to create the corresponding element.
